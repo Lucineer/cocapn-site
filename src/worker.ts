@@ -1,116 +1,20 @@
-Here's a complete Cloudflare Worker for Cocapn.com in a single TypeScript file:
-
-
-export interface Env {
-  // Environment variables can be added here
-}
-
-interface MembershipTier {
-  id: string;
-  name: string;
-  price: string;
-  description: string;
-  features: string[];
-  ctaText: string;
-  ctaLink: string;
-  accent?: boolean;
-}
-
-const MEMBERSHIP_TIERS: MembershipTier[] = [
-  {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    description: "Perfect for getting started",
-    features: [
-      "Deckboss.ai trial (5/day)",
-      "Cocapn.ai (1 instance)",
-      "Community support",
-      "Open source access"
-    ],
-    ctaText: "Get Started",
-    ctaLink: "#signup"
-  },
-  {
-    id: "standard",
-    name: "Standard",
-    price: "$9/mo",
-    description: "For growing teams",
-    features: [
-      "Unlimited Deckboss.ai",
-      "5 cocapn instances",
-      "Cloud sync",
-      "Email support",
-      "Fleet analytics"
-    ],
-    ctaText: "Upgrade Now",
-    ctaLink: "#signup",
-    accent: true
-  },
-  {
-    id: "professional",
-    name: "Professional",
-    price: "$29/mo",
-    description: "Full platform access",
-    features: [
-      "Unlimited everything",
-      "Capitaine.ai access",
-      "Priority support",
-      "Multi-device fleet",
-      "Custom templates",
-      "White-label"
-    ],
-    ctaText: "Go Pro",
-    ctaLink: "#signup"
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$99/seat/mo",
-    description: "Custom solutions",
-    features: [
-      "Dedicated support",
-      "Custom hardware",
-      "On-site training",
-      "SLA guarantee",
-      "Fleet analytics",
-      "White-label everything",
-      "Custom domains"
-    ],
-    ctaText: "Contact Sales",
-    ctaLink: "#contact"
-  }
-];
-
-const BRAND_FAMILY = [
-  { name: "Deckboss.ai", description: "AI-powered presentation builder", color: "#00d4ff" },
-  { name: "Deckboss.net", description: "Presentation hosting & sharing", color: "#00b8e6" },
-  { name: "Cocapn.ai", description: "Autonomous agent framework", color: "#0099cc" },
-  { name: "Cocapn.com", description: "Membership & billing portal", color: "#0077b3" },
-  { name: "Capitaine.ai", description: "Enterprise agent orchestration", color: "#005580" }
-];
-
-const HTML_TEMPLATE = `
+javascript
+const HTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cocapn Ecosystem - Open-Source Agent Infrastructure</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    <title>cocapn-site | Cloudflare Worker Platform</title>
+    <meta name="description" content="Deploy serverless applications globally with cocapn-site">
     <style>
         :root {
             --accent: #00d4ff;
-            --accent-dark: #0099cc;
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-card: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --border: #333333;
-            --radius: 12px;
-            --shadow: 0 8px 30px rgba(0, 212, 255, 0.08);
-            --transition: all 0.2s ease;
+            --bg: #0a0a0f;
+            --surface: #151520;
+            --text: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --border: #2a2a3a;
         }
         
         * {
@@ -120,9 +24,9 @@ const HTML_TEMPLATE = `
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.6;
             overflow-x: hidden;
         }
@@ -134,598 +38,385 @@ const HTML_TEMPLATE = `
         }
         
         /* Navigation */
-        .nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
+        nav {
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
-            z-index: 1000;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .nav-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
         }
         
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
             text-decoration: none;
         }
         
         .nav-links {
             display: flex;
-            gap: 32px;
+            gap: 2rem;
         }
         
-        .nav-link {
-            color: var(--text-secondary);
+        .nav-links a {
+            color: var(--text);
             text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
+            transition: color 0.3s;
         }
         
-        .nav-link:hover {
+        .nav-links a:hover {
             color: var(--accent);
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 24px;
-            cursor: pointer;
         }
         
         /* Hero */
         .hero {
-            padding: 160px 0 100px;
+            padding: 5rem 0;
             text-align: center;
-            background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(0, 212, 255, 0.05) 100%);
+            background: linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%);
         }
         
         .hero h1 {
-            font-size: 64px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent) 0%, #ffffff 100%);
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--accent), #00a8ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
         }
         
-        .hero-subtitle {
-            font-size: 20px;
+        .hero p {
+            font-size: 1.2rem;
             color: var(--text-secondary);
             max-width: 600px;
-            margin: 0 auto 40px;
+            margin: 0 auto 2rem;
         }
         
-        /* Sections */
-        .section {
-            padding: 100px 0;
+        .cta-button {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
+        }
+        
+        /* Features */
+        .features {
+            padding: 4rem 0;
+            background: var(--surface);
         }
         
         .section-title {
-            font-size: 40px;
-            font-weight: 700;
-            margin-bottom: 60px;
             text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2rem;
         }
         
-        /* Membership Cards */
-        .tiers-grid {
+        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
         }
         
-        .tier-card {
-            background: var(--bg-card);
+        .feature-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 8px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 40px 30px;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            transition: border-color 0.3s;
         }
         
-        .tier-card:hover {
+        .feature-card:hover {
+            border-color: var(--accent);
+        }
+        
+        .feature-icon {
+            color: var(--accent);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Pricing */
+        .pricing {
+            padding: 4rem 0;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .pricing-card {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: transform 0.3s;
+        }
+        
+        .pricing-card:hover {
             transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: var(--shadow);
         }
         
-        .tier-card.accent {
+        .pricing-card.popular {
             border-color: var(--accent);
-            box-shadow: var(--shadow);
+            position: relative;
         }
         
-        .tier-badge {
+        .popular-badge {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--accent);
-            color: var(--bg-primary);
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 0 var(--radius) 0 var(--radius);
-        }
-        
-        .tier-name {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .tier-price {
-            font-size: 48px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            color: var(--accent);
-        }
-        
-        .tier-description {
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-        
-        .tier-features {
-            list-style: none;
-            margin-bottom: 40px;
-        }
-        
-        .tier-feature {
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .tier-feature:before {
-            content: "✓";
-            color: var(--accent);
+            color: var(--bg);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: bold;
         }
         
-        .tier-cta {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: var(--accent);
-            color: var(--bg-primary);
-            border: none;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-            text-decoration: none;
-        }
-        
-        .tier-cta:hover {
-            background: var(--accent-dark);
-            transform: translateY(-2px);
-        }
-        
-        /* Brand Family */
-        .brand-flow {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-        }
-        
-        .brand-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 30px;
-            width: 200px;
-            text-align: center;
-            transition: var(--transition);
-        }
-        
-        .brand-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-        }
-        
-        .brand-name {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
             color: var(--accent);
+            margin: 1rem 0;
         }
         
-        .brand-description {
-            font-size: 14px;
+        .price span {
+            font-size: 1rem;
             color: var(--text-secondary);
         }
         
-        /* Philosophy */
-        .philosophy-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
         }
         
-        .philosophy-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 30px;
-        }
-        
-        .philosophy-icon {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-        
-        .philosophy-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--accent);
-        }
-        
-        /* Company */
-        .company-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .company-text {
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-        }
-        
-        /* Contact */
-        .contact-form {
-            max-width: 500px;
-            margin: 40px auto 0;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: var(--transition);
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-        
-        .form-textarea {
-            min-height: 150px;
-            resize: vertical;
+        .pricing-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
         }
         
         /* Footer */
-        .footer {
-            background: var(--bg-secondary);
-            padding: 60px 0 40px;
+        footer {
+            background: var(--surface);
+            padding: 3rem 0;
             border-top: 1px solid var(--border);
-            margin-top: 100px;
+            margin-top: 4rem;
         }
         
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
         }
         
-        .footer-brand {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
+        .footer-section h4 {
             color: var(--accent);
+            margin-bottom: 1rem;
         }
         
         .footer-links {
             list-style: none;
         }
         
-        .footer-link {
+        .footer-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            margin-bottom: 10px;
-            display: block;
-            transition: var(--transition);
+            transition: color 0.3s;
         }
         
-        .footer-link:hover {
+        .footer-links a:hover {
             color: var(--accent);
         }
         
-        .footer-bottom {
+        .copyright {
             text-align: center;
-            padding-top: 40px;
-            border-top: 1px solid var(--border);
+            margin-top: 3rem;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 0.9rem;
         }
         
-        /* Responsive */
+        /* Mobile */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 48px;
-            }
-            
             .nav-links {
                 display: none;
             }
             
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .brand-flow {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .brand-card {
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            .section {
-                padding: 60px 0;
-            }
-        }
-        
-        @media (max-width: 480px) {
             .hero h1 {
-                font-size: 36px;
+                font-size: 2rem;
             }
             
-            .hero-subtitle {
-                font-size: 18px;
-            }
-            
-            .section-title {
-                font-size: 32px;
-            }
-            
-            .tier-price {
-                font-size: 36px;
+            .footer-content {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav">
+    <nav>
         <div class="container nav-content">
-            <a href="/" class="logo">
-                <span>🧠</span>
-                <span>Cocapn</span>
-            </a>
+            <a href="#" class="logo">cocapn-site</a>
             <div class="nav-links">
-                <a href="#membership" class="nav-link">Membership</a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#company" class="nav-link">Company</a>
-                <a href="#docs" class="nav-link">Docs</a>
-                <a href="#contact" class="nav-link">Contact</a>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#">Documentation</a>
+                <a href="#">Login</a>
             </div>
-            <button class="mobile-menu-btn">☰</button>
         </div>
     </nav>
-
-    <!-- Hero -->
+    
     <section class="hero">
         <div class="container">
-            <h1>The Cocapn Ecosystem</h1>
-            <p class="hero-subtitle">
-                Open-source agent infrastructure for the next generation of autonomous systems.
-                Pay only for what you use, fork everything, and self-host if you want.
-            </p>
+            <h1>Deploy Globally in Milliseconds</h1>
+            <p>Serverless platform built on Cloudflare Workers. Scale instantly with zero configuration.</p>
+            <a href="#pricing" class="cta-button">Get Started Free</a>
         </div>
     </section>
-
-    <!-- Membership Tiers -->
-    <section id="membership" class="section">
+    
+    <section id="features" class="features">
         <div class="container">
-            <h2 class="section-title">Membership Tiers</h2>
-            <div class="tiers-grid">
-                ${MEMBERSHIP_TIERS.map(tier => `
-                <div class="tier-card ${tier.accent ? 'accent' : ''}">
-                    ${tier.accent ? '<div class="tier-badge">Most Popular</div>' : ''}
-                    <h3 class="tier-name">${tier.name}</h3>
-                    <div class="tier-price">${tier.price}</div>
-                    <p class="tier-description">${tier.description}</p>
-                    <ul class="tier-features">
-                        ${tier.features.map(feature => `
-                        <li class="tier-feature">${feature}</li>
-                        `).join('')}
+            <h2 class="section-title">Why Choose cocapn-site</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Global Edge Network</h3>
+                    <p>Deploy to 300+ cities worldwide with automatic traffic routing.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Built-in Security</h3>
+                    <p>DDoS protection, WAF, and zero-trust security by default.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Instant Deployments</h3>
+                    <p>Push code and see it live globally in under 300ms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Real-time Analytics</h3>
+                    <p>Monitor performance and usage with detailed metrics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple, Predictable Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="price">$0<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>100,000 requests/day</li>
+                        <li>10ms CPU time/request</li>
+                        <li>1GB storage</li>
+                        <li>Basic analytics</li>
                     </ul>
-                    <a href="${tier.ctaLink}" class="tier-cta">${tier.ctaText}</a>
+                    <a href="#" class="cta-button">Get Started</a>
                 </div>
-                `).join('')}
+                
+                <div class="pricing-card popular">
+                    <div class="popular-badge">Most Popular</div>
+                    <h3>Pro</h3>
+                    <div class="price">$9<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>1M requests/day</li>
+                        <li>50ms CPU time/request</li>
+                        <li>10GB storage</li>
+                        <li>Advanced analytics</li>
+                    </ul>
+                    <a href="#" class="cta-button">Upgrade Now</a>
+                </div>
+                
+                <div class="pricing-card">
+                    <h3>Business</h3>
+                    <div class="price">$29<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>10M requests/day</li>
+                        <li>100ms CPU time/request</li>
+                        <li>100GB storage</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="#" class="cta-button">Contact Sales</a>
+                </div>
+                
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">$99<span>/month</span></div>
+                    <ul class="pricing-features">
+                        <li>Unlimited requests</li>
+                        <li>Custom limits</li>
+                        <li>1TB storage</li>
+                        <li>24/7 phone support</li>
+                    </ul>
+                    <a href="#" class="cta-button">Enterprise Plan</a>
+                </div>
             </div>
         </div>
     </section>
-
-    <!-- Why Pay? -->
-    <section id="features" class="section" style="background: var(--bg-secondary);">
+    
+    <footer>
         <div class="container">
-            <h2 class="section-title">What You're Paying For</h2>
-            <div class="philosophy-grid">
-                <div class="philosophy-card">
-                    <div class="philosophy-icon">📦</div>
-                    <h3 class="philosophy-title">Cloud Infrastructure</h3>
-                    <p>Your membership pays for servers, bandwidth, and maintenance. The software itself is free and open source.</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>cocapn-site</h4>
+                    <p>Global serverless platform powered by Cloudflare Workers.</p>
                 </div>
-                <div class="philosophy-card">
-                    <div class="philosophy-icon">🤝</div>
-                    <h3 class="philosophy-title">Cost-Plus Pricing</h3>
-                    <p>We charge only what it costs us, plus a small margin. High-performing stars get their costs reduced to zero.</p>
-                </div>
-                <div class="philosophy-card">
-                    <div class="philosophy-icon">🌱</div>
-                    <h3 class="philosophy-title">Ecosystem Growth</h3>
-                    <p>Upper tiers subsidize lower tiers. The more people use it, the better it gets for everyone.</p>
-                </div>
-                <div class="philosophy-card">
-                    <div class="philosophy-icon">🔓</div>
-                    <h3 class="philosophy-title">No Lock-in</h3>
-                    <p>Fork everything on GitHub and self-host if you want. You own your data and your workflow.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Brand Family -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">The Ecosystem</h2>
-            <div class="brand-flow">
-                ${BRAND_FAMILY.map(brand => `
-                <div class="brand-card">
-                    <div class="brand-name">${brand.name}</div>
-                    <p class="brand-description">${brand.description}</p>
-                </div>
-                `).join('')}
-            </div>
-        </div>
-    </section>
-
-    <!-- Company -->
-    <section id="company" class="section" style="background: var(--bg-secondary);">
-        <div class="container">
-            <h2 class="section-title">Our Story</h2>
-            <div class="company-content">
-                <p class="company-text">
-                    Cocapn started with a simple idea: make autonomous agent infrastructure accessible to everyone.
-                    We believe that the future of software is collaborative, open, and decentralized.
-                </p>
-                <p class="company-text">
-                    Our mission is to build tools that empower creators, not lock them in.
-                    Every line of code we write is open source, every decision we make is transparent,
-                    and every dollar we charge goes back into making the ecosystem better.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact -->
-    <section id="contact" class="section">
-        <div class="container">
-            <h2 class="section-title">Get in Touch</h2>
-            <form class="contact-form">
-                <div class="form-group">
-                    <input type="email" class="form-input" placeholder="Your email" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="form-input" placeholder="Subject" required>
-                </div>
-                <div class="form-group">
-                    <textarea class="form-input form-textarea" placeholder="Your message" required></textarea>
-                </div>
-                <button type="submit" class="tier-cta">Send Message</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <div class="footer-brand">🧠 Cocapn</div>
-                    <p style="color: var(--text-secondary);">Open-source agent infrastructure</p>
-                </div>
-                <div>
-                    <div class="footer-brand">Products</div>
+                <div class="footer-section">
+                    <h4>Product</h4>
                     <ul class="footer-links">
-                        <li><a href="https://deckboss.ai" class="footer-link">Deckboss.ai</a></li>
-                        <li><a href="https://deckboss.net" class="footer-link">Deckboss.net</a></li>
-                        <li><a href="https://cocapn.ai" class="footer-link">Cocapn.ai</a></li>
-                        <li><a href="https://capitaine.ai" class="footer-link">Capitaine.ai</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#">Documentation</a></li>
                     </ul>
                 </div>
-                <div>
-                    <div class="footer-brand">Resources</div>
+                <div class="footer-section">
+                    <h4>Company</h4>
                     <ul class="footer-links">
-                        <li><a href="/docs" class="footer-link">Documentation</a></li>
-                        <li><a href="https://github.com/Lucineer" class="footer-link">GitHub</a></li>
-                        <li><a href="/blog" class="footer-link">Blog</a></li>
-                        <li><a href="/support" class="footer-link">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="footer-brand">Legal</div>
-                    <ul class="footer-links">
-                        <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
-                        <li><a href="/terms" class="footer-link">Terms of Service</a></li>
-                        <li><a href="/security" class="footer-link">Security</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Contact</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>© ${new Date().getFullYear()} Cocapn Ecosystem. All software is open source under MIT License.</p>
+            <div class="copyright">
+                &copy; 2024 cocapn-site. All rights reserved.
             </div>
         </div>
     </footer>
-
+    
     <script>
-        // Mobile menu toggle
-        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-        });
-
-        // Smooth scroll for anchor links
+        // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
+            anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
                         behavior: 'smooth'
                     });
                 }
             });
-        });
-
-        // Form submission
-        document.querySelector('.contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for your message! We will get back to you soon.');
-            this.reset();
         });
     </script>
 </body>
@@ -733,85 +424,31 @@ const HTML_TEMPLATE = `
 `;
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request) {
     const url = new URL(request.url);
-    const path = url.pathname;
-
-    // Set security headers
-    const securityHeaders = {
-      'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';",
-      'X-Frame-Options': 'DENY',
-      'X-Content-Type-Options': 'nosniff',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
-    };
-
+    
     // Health endpoint
-    if (path === '/health') {
-      return new Response(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }), {
+    if (url.pathname === '/health') {
+      return new Response(JSON.stringify({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        service: 'cocapn-site'
+      }), {
         headers: {
           'Content-Type': 'application/json',
-          ...securityHeaders
+          'Cache-Control': 'no-cache'
         }
       });
     }
-
-    // API endpoint for membership data
-    if (path === '/api/v1/membership') {
-      const apiResponse = {
-        tiers: MEMBERSHIP_TIERS,
-        philosophy: {
-          title: "Our Pricing Philosophy",
-          points: [
-            "Software is open source and free — membership pays for cloud infrastructure, support, and convenience",
-            "Cost-plus pricing that drops to 0 for high-performing stars — loyalty reward",
-            "Upper tiers subsidize lower tiers — the ecosystem grows when more people use it",
-            "No lock-in: fork everything and self-host if you want"
-          ]
-        },
-        updated: new Date().toISOString()
-      };
-
-      return new Response(JSON.stringify(apiResponse, null, 2), {
-        headers: {
-          'Content-Type': 'application/json',
-          ...securityHeaders
-        }
-      });
-    }
-
-    // Serve main HTML page
-    if (path === '/' || path === '/index.html') {
-      return new Response(HTML_TEMPLATE, {
-        headers: {
-          'Content-Type': 'text/html;charset=UTF-8',
-          ...securityHeaders
-        }
-      });
-    }
-
-    // 404 for other routes
-    return new Response('Not Found', {
-      status: 404,
-      headers: securityHeaders
+    
+    // Main landing page
+    return new Response(HTML, {
+      headers: {
+        'Content-Type': 'text/html;charset=UTF-8',
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';",
+        'X-Content-Type-Options': 'nosniff'
+      }
     });
   }
 };
-
-
-This Cloudflare Worker provides:
-
-1. **Complete Company/Membership Site** with all requested sections
-2. **Professional Design** with dark theme, responsive layout, and Linear/Vercel-like aesthetics
-3. **Membership Tiers** displayed in responsive cards with clear CTAs
-4. **Brand Family Diagram** showing the ecosystem lifecycle
-5. **Pricing Philosophy** section explaining the cost-plus model
-6. **Required Endpoints**:
-   - `/health` for health checks
-   - `/api/v1/membership` returning tier details as JSON
-7. **Security Headers** including CSP and X-Frame-Options
-8. **Mobile-First Responsive Design**
-9. **Single File** with no external dependencies
-10. **TypeScript** with proper typing
-
-The design uses the `#00d4ff` accent color throughout, has a clean professional feel, and includes all navigation items. The membership tiers are clearly presented with their features, and the philosophy section communicates the unique pricing approach effectively.
